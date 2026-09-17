@@ -1,60 +1,31 @@
-# Train Defect Reporter
+# Train Defect Reporter v2
 
-Installable responsive web app for desktop, iOS and Android. Staff submit a train number, coach number, description and photo. Administrators see all reports and can delete them after a confirmation prompt.
+Full React/Vite/Supabase app with the existing D&V workflow plus shared Exam Mode.
 
-## Architecture
-- React + Vite frontend, deployed by GitHub Actions to GitHub Pages
-- Supabase email/password Auth
-- Supabase Postgres with Row Level Security (RLS)
-- Private Supabase Storage bucket with one-hour signed image URLs
-- Progressive Web App (PWA), installable from supported browsers
+## New features
+- User landing page with D&V and Exam Mode
+- Fleet-driven setup, seeded with Azuma and coaches 829 to 821
+- Six-digit unit exams shared between authenticated users
+- Separate defect records grouped by unit and coach
+- Admin tabs for D&V and exams
+- SAP booked checkbox with booking audit fields
+- Soft-delete exams, retained for 10 days before purge
 
-## 1. Supabase setup
-1. Create a Supabase project.
-2. Open **SQL Editor**, paste `supabase/migrations/001_setup.sql`, and run it once.
-3. In **Authentication > Providers > Email**, enable email/password. For a staff-only system, disable public sign-ups and create users in **Authentication > Users**.
-4. Create the intended administrator as an Auth user.
-5. Promote that account in SQL Editor:
+## Deploy
+1. Back up your Supabase project.
+2. Run `supabase/migrations/002_exam_mode_full_setup.sql` in Supabase SQL Editor. It is designed for the supplied original schema.
+3. Create/promote an admin using the SQL comment at the bottom of the migration.
+4. For automatic permanent deletion, schedule `select public.purge_expired_exams();` daily using Supabase Cron.
+5. Copy `.env.example` to `.env.local` and add the URL and publishable key. Never add a service-role key to the frontend.
+6. Run `npm install`, then `npm run dev`.
+7. Push to `main`; the included GitHub Actions workflow deploys GitHub Pages.
+
+## Adding another fleet
+Insert a row into `public.fleets`, for example:
 ```sql
-update public.profiles
-set role = 'admin'
-where id = (select id from auth.users where email = 'admin@example.com');
+insert into public.fleets(code,name,coach_numbers) values('NEW','New Fleet',array['101','102']);
 ```
-6. Leave normal accounts with the default `user` role.
+The fleet selector updates from the database without frontend changes. The current interface displays the Azuma 829 to 821 coach sequence. If future fleets use different coaches, update `COACHES` in `src/App.jsx` or extend the editor to read `fleets.coach_numbers`.
 
-## 2. Local setup
-```bash
-cp .env.example .env.local
-# Add the Supabase Project URL and publishable key
-npm install
-npm run dev
-```
-Never put a Supabase secret key or service-role key in the frontend or GitHub repository.
-
-## 3. GitHub Pages deployment
-1. Create a GitHub repository and push this project's contents to its `main` branch.
-2. In **Repository Settings > Secrets and variables > Actions**, add:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_PUBLISHABLE_KEY`
-3. In **Settings > Pages**, choose **GitHub Actions** as the source.
-4. Push to `main`, then check the **Actions** tab.
-5. Add the final GitHub Pages URL in Supabase under **Authentication > URL Configuration > Site URL** and **Redirect URLs**.
-
-## 4. Install on devices
-- Desktop Chrome/Edge: open the deployed URL and choose **Install app**.
-- Android Chrome: menu > **Add to Home screen** or **Install app**.
-- iPhone/iPad Safari: Share > **Add to Home Screen**.
-
-The reporting operation requires a connection to Supabase. The app shell may load from cache, but submissions are not queued offline.
-
-## Security notes
-- The image bucket is private.
-- RLS lets authenticated users insert only records assigned to their own account.
-- Only admins can list/delete reports and view/delete images.
-- Role decisions are enforced in the database, not only hidden in the interface.
-- Deleting a report also requests deletion of its associated image.
-- Consider your organisation's retention policy, privacy assessment, support ownership and urgent-risk escalation process before production use.
-- Test authorised and unauthorised accounts before rollout.
-
-## Optional next improvements
-Offline submission queue, defect status/workflow, coach location fields, image compression, audit log, export, notifications, SSO and monitoring.
+## Important
+Test RLS with a normal user and admin before production. The 10-day purge is database-driven and only runs automatically if the scheduled Cron job is configured.
