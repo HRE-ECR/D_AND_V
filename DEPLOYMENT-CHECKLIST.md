@@ -1,0 +1,12 @@
+# Deployment checklist
+- [ ] Back up the current Supabase project
+- [ ] Run `full-supabase-setup.sql`
+- [ ] Confirm `defect_images`, `fleets`, `exams`, and `exam_defects` exist
+- [ ] Confirm existing D&V image paths migrated into `defect_images`
+- [ ] Promote the intended admin account
+- [ ] Test multiple-photo submission on iPhone, Android, and desktop
+- [ ] Test admin image viewing and D&V deletion
+- [ ] Test compact exam-delete control and 10-day soft deletion
+- [ ] Configure trusted daily purge Cron job
+- [ ] Add GitHub Actions secrets
+- [ ] Push to `main` and confirm the workflow succeeds
