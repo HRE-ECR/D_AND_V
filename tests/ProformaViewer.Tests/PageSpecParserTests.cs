@@ -1,0 +1,1 @@
+using Xunit;using ProformaViewer.Services;namespace ProformaViewer.Tests;public class Tests{[Fact]public void Parses()=>Assert.Equal(new[]{16,16,16,16},PageSpecParser.Parse("16x4"));}
