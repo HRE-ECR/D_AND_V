@@ -1,54 +1,18 @@
-# Train Defect Reporter v3.1.1
+# Proforma Viewer v1.4.0
 
-GitHub Pages-ready React/Vite PWA backed by Supabase.
+## AT200 frequency selector
+The AT200 toolbar contains an X01-X24 selector. Choosing a frequency reads the external `385 Star chart.xlsx` workbook and selects matching VMI tiles. AT300 does not show this selector.
 
-## v3.1.1 changes
+### Editing frequencies
+Edit the star chart on the network drive. Keep `VMI Task` in the first column, keep `X01` through `X24` as headers, and place any non-empty marker such as `★` in cells where a task is required. The app reads the workbook each time a frequency is selected, so no code rebuild is required.
 
-- Corrected double-escaped digit validation that prevented the D&V Submit button from ever enabling.
-- Added live field-by-field validation indicators.
+Default schedule path:
+`I:\ServiceDelivery\ECR\1. Proforma Viewer\Databases\385 Star chart.xlsx`
 
-## v3 changes
+If the workbook moves, edit `Schedules:AT200` in `src/ProformaViewer/appsettings.json`.
 
-- A D&V report can contain up to 10 photos.
-- Users can add or remove photos before submitting.
-- Submit activates only when the 6-digit train number, 3-digit coach number, non-empty description, and at least one valid photo are present.
-- HEIC/HEIF files with a missing browser MIME type are recognised by file extension.
-- Admins see every photo attached to a D&V report.
-- Existing one-photo reports are migrated into `defect_images` by the SQL setup.
-- Landing-page D&V wording now reads `Report damage and vandalism.`
-- Exam deletion is a compact icon control rather than a full-width button.
+## GitHub deployment
+Upload the complete repository, including `.github`, to `main`. The Build workflow produces a self-contained `ProformaViewer-win-x64` artifact.
 
-## Supabase
-
-1. Back up the existing Supabase project.
-2. Run `full-supabase-setup.sql` in the Supabase SQL Editor. It is the complete rerunnable setup.
-3. Promote the required admin by using the commented query at the bottom of the SQL file.
-4. Schedule `select public.purge_expired_exams();` daily using a trusted Supabase Cron job.
-
-The SQL retains existing D&V records, removes the old `NOT NULL` requirement from `defects.image_path`, creates `defect_images`, and migrates existing image paths into the new child table.
-
-## Local development
-
-```bash
-cp .env.example .env.local
-npm install
-npm run dev
-```
-
-## GitHub Pages
-
-Add these repository Actions secrets:
-
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-
-Push to `main`. The included workflow builds and deploys the `dist` folder.
-
-## Acceptance checks
-
-- Add one photo, then add another before submission.
-- Remove a selected photo before submission.
-- Confirm one D&V defect is created with multiple `defect_images` rows.
-- Confirm the admin dashboard displays all attached images.
-- Confirm the exam delete icon does not consume the exam tile.
-- Test normal-user and admin RLS independently before production rollout.
+## Export completion prompt
+After a successful export, the application displays an **Export complete** dialog showing the page count and any warnings. Selecting **Yes** opens the combined PDF using the default Windows PDF application. Selecting **No** leaves the file saved without opening it.
