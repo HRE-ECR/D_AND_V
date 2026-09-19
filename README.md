@@ -1,8 +1,15 @@
-# Proforma Viewer v1.4.0
+# Train Defect Reporter v3.1
 
-The AT200 X01-X24 selector now reads `AT200 Frequency Chart.xlsx` from the same folder as `ProformaViewer.exe`. No network schedule path is used.
+## Fixes
+- Fixes D&V submit RLS failure by allowing a user to read back their own newly inserted defect ID.
+- D&V and Exam descriptions accept one non-space character.
+- Supports up to 10 photos on one D&V report.
+- Compact exam delete icon.
 
-## Editing the schedule
-Click **Edit frequency file** in the AT200 toolbar, or open `AT200 Frequency Chart.xlsx` beside the executable. Keep `VMI Task` and `X01` to `X24` headers. Any non-empty marker selects that task for that frequency. Save the workbook, then choose the frequency again.
-
-The GitHub publish workflow automatically places the workbook beside the executable. Always download/extract the complete artifact, not only the EXE.
+## Deploy
+1. Back up Supabase.
+2. Run `full-supabase-setup.sql` in SQL Editor. Run the whole file.
+3. Promote the admin with the commented query at the end.
+4. Add GitHub secrets `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
+5. Push to `main`.
+6. Configure trusted daily Cron: `select public.purge_expired_exams();`
