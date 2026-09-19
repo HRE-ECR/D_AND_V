@@ -1,31 +1,47 @@
-# Train Defect Reporter v2
+# Train Defect Reporter v3
 
-Full React/Vite/Supabase app with the existing D&V workflow plus shared Exam Mode.
+GitHub Pages-ready React/Vite PWA backed by Supabase.
 
-## New features
-- User landing page with D&V and Exam Mode
-- Fleet-driven setup, seeded with Azuma and coaches 829 to 821
-- Six-digit unit exams shared between authenticated users
-- Separate defect records grouped by unit and coach
-- Admin tabs for D&V and exams
-- SAP booked checkbox with booking audit fields
-- Soft-delete exams, retained for 10 days before purge
+## v3 changes
 
-## Deploy
-1. Back up your Supabase project.
-2. Run `supabase/migrations/002_exam_mode_full_setup.sql` in Supabase SQL Editor. It is designed for the supplied original schema.
-3. Create/promote an admin using the SQL comment at the bottom of the migration.
-4. For automatic permanent deletion, schedule `select public.purge_expired_exams();` daily using Supabase Cron.
-5. Copy `.env.example` to `.env.local` and add the URL and publishable key. Never add a service-role key to the frontend.
-6. Run `npm install`, then `npm run dev`.
-7. Push to `main`; the included GitHub Actions workflow deploys GitHub Pages.
+- A D&V report can contain up to 10 photos.
+- Users can add or remove photos before submitting.
+- Admins see every photo attached to a D&V report.
+- Existing one-photo reports are migrated into `defect_images` by the SQL setup.
+- Landing-page D&V wording now reads `Report damage and vandalism.`
+- Exam deletion is a compact icon control rather than a full-width button.
 
-## Adding another fleet
-Insert a row into `public.fleets`, for example:
-```sql
-insert into public.fleets(code,name,coach_numbers) values('NEW','New Fleet',array['101','102']);
+## Supabase
+
+1. Back up the existing Supabase project.
+2. Run `full-supabase-setup.sql` in the Supabase SQL Editor. It is the complete rerunnable setup.
+3. Promote the required admin by using the commented query at the bottom of the SQL file.
+4. Schedule `select public.purge_expired_exams();` daily using a trusted Supabase Cron job.
+
+The SQL retains existing D&V records, removes the old `NOT NULL` requirement from `defects.image_path`, creates `defect_images`, and migrates existing image paths into the new child table.
+
+## Local development
+
+```bash
+cp .env.example .env.local
+npm install
+npm run dev
 ```
-The fleet selector updates from the database without frontend changes. The current interface displays the Azuma 829 to 821 coach sequence. If future fleets use different coaches, update `COACHES` in `src/App.jsx` or extend the editor to read `fleets.coach_numbers`.
 
-## Important
-Test RLS with a normal user and admin before production. The 10-day purge is database-driven and only runs automatically if the scheduled Cron job is configured.
+## GitHub Pages
+
+Add these repository Actions secrets:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+Push to `main`. The included workflow builds and deploys the `dist` folder.
+
+## Acceptance checks
+
+- Add one photo, then add another before submission.
+- Remove a selected photo before submission.
+- Confirm one D&V defect is created with multiple `defect_images` rows.
+- Confirm the admin dashboard displays all attached images.
+- Confirm the exam delete icon does not consume the exam tile.
+- Test normal-user and admin RLS independently before production rollout.

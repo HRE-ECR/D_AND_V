@@ -1,10 +1,12 @@
 # Deployment checklist
-- [ ] Back up current Supabase database
-- [ ] Run `002_exam_mode_full_setup.sql`
-- [ ] Confirm Azuma appears in `fleets`
-- [ ] Test normal user can create/open exams and add defects
-- [ ] Test normal user cannot tick SAP boxes or view deleted exams
-- [ ] Test admin can view both dashboards, tick SAP, and soft-delete exams
-- [ ] Configure daily Cron call to `select public.purge_expired_exams();`
+- [ ] Back up the current Supabase project
+- [ ] Run `full-supabase-setup.sql`
+- [ ] Confirm `defect_images`, `fleets`, `exams`, and `exam_defects` exist
+- [ ] Confirm existing D&V image paths migrated into `defect_images`
+- [ ] Promote the intended admin account
+- [ ] Test multiple-photo submission on iPhone, Android, and desktop
+- [ ] Test admin image viewing and D&V deletion
+- [ ] Test compact exam-delete control and 10-day soft deletion
+- [ ] Configure trusted daily purge Cron job
 - [ ] Add GitHub Actions secrets
-- [ ] Run `npm run build` and deploy
+- [ ] Push to `main` and confirm the workflow succeeds
